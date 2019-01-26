@@ -10,6 +10,23 @@ The API is unstable and subject to change.  A nightly rustc is
 required. Any feedback, bug reports, and pull requests are very
 welcome.
 
+## Example
+```rust
+use fastfloat::*;
+
+fn main() {
+    let mut v:Vec<F32> = Vec::new();
+
+    for i in 0..1000 {
+        v.push(fa(i as f32) * 1e-2);
+    }
+
+    let s:F32 = v.iter().map(|x| x.fastexp()).sum();
+    
+    println!("Sum: {}, Avg: {}", s, s / 1e3);
+}
+```
+
 
 ## License
 
