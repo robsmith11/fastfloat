@@ -15,13 +15,8 @@ welcome.
 use fastfloat::*;
 
 fn main() {
-    let mut v:Vec<F32> = Vec::new();
-
-    for i in 0..1000 {
-        v.push(fa(i as f32) * 1e-2);
-    }
-
-    let s:F32 = v.iter().map(|x| x.fastexp()).sum();
+    let v:Vec<F32> = (0..1000).map(|x| (fa(x as f32) * 0.01).fastexp()).collect();
+    let s:F32 = v.iter().sum();
     
     println!("Sum: {}, Avg: {}", s, s / 1e3);
 }
