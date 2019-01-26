@@ -253,6 +253,19 @@ impl F64 {
     }
 }
 
+impl Sum<F32> for F32 {
+    fn sum<I:Iterator<Item=F32>>(iter: I) -> F32 {
+        iter.fold(fa(0.0), |a,b| a + b)
+    }
+}
+
+impl Sum<F64> for F64 {
+    fn sum<I:Iterator<Item=F64>>(iter: I) -> F64 {
+        iter.fold(fa(0.0), |a,b| a + b)
+    }
+}
+
+
 impl<'a> Sum<&'a F32> for F32 {
     fn sum<I:Iterator<Item=&'a F32>>(iter: I) -> F32 {
         iter.fold(fa(0.0), |a,b| a + *b)
