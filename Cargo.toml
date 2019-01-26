@@ -1,0 +1,14 @@
+[package]
+name = "fastfloat"
+version = "0.1.0"
+license = "MIT OR Apache-2.0"
+authors = ["robsmith11"]
+edition = "2018"
+
+documentation = "https://docs.rs/fastfloat/"
+repository = "https://github.com/robsmith11/fastfloat"
+
+description = "Fast-math wrapper and convenient numeric functions for approximate floating point operations in Rust"
+
+[dependencies]
+num-traits = "0.2.6"
