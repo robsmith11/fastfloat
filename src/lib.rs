@@ -204,7 +204,8 @@ impl F32 {
     pub fn as_64(self) -> F64 {
         fa(self.0 as f64)
     }
-    
+
+    /// https://codingforspeed.com/using-faster-exponential-approximation/
     pub fn fastexp(self) -> Self {
         let mut y = 1.0 + self*0.00390625;
         y *= y; y *= y; y *= y; y *= y;
@@ -212,6 +213,7 @@ impl F32 {
         y
     }
 
+    /// https://stackoverflow.com/a/39822314
     #[allow(overflowing_literals)]
     pub fn fastln(self) -> Self { unsafe {
         let selfi = mem::transmute(self):i32;
@@ -238,6 +240,7 @@ impl F64 {
         fa(self.0 as f32)
     }
 
+    /// https://codingforspeed.com/using-faster-exponential-approximation/
     pub fn fastexp(self) -> Self {
         let mut y = 1.0 + self*0.00390625;
         y *= y; y *= y; y *= y; y *= y;
