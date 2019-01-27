@@ -11,6 +11,7 @@
 //!
 //! [1]: http://llvm.org/docs/LangRef.html#fast-math-flags
 //!
+#![feature(const_fn)]
 #![feature(core_intrinsics)]
 #![feature(type_ascription)]
 
@@ -46,7 +47,7 @@ pub type F32 = Fast<f32>;
 pub type F64 = Fast<f64>;
 
 /// Convenience function for wrapping a floating point value
-pub fn fa<F:Float>(x: F) -> Fast<F> {
+pub const fn fa<F:Float>(x: F) -> Fast<F> {
     Fast(x)
 }
 
