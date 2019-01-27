@@ -6,9 +6,6 @@
 //! Note that as of this writing, the Rust instrinsics use the “fast” flag
 //! documented in the langref; this enables all the float flags.
 //!
-//! This crate does not use `![always(inline)]`, so for best performance,
-//! compile your crate with `lto=true`.
-//!
 //! [1]: http://llvm.org/docs/LangRef.html#fast-math-flags
 //!
 #![feature(const_fn)]
@@ -57,6 +54,7 @@ macro_rules! impl_op {
             // Fast<F> + F
             impl<F:Float> $name<F> for Fast<F> {
                 type Output = Self;
+                #[inline(always)]
                 fn $method(self, rhs: F) -> Self::Output {
                     unsafe {
                         fa(intrinsics::$intrins(self.0, rhs))
@@ -67,6 +65,7 @@ macro_rules! impl_op {
             // F + Fast<F>
             impl $name<F32> for f32 {
                 type Output = F32;
+                #[inline(always)]
                 fn $method(self, rhs: F32) -> Self::Output {
                     unsafe {
                         fa(intrinsics::$intrins(self, rhs.0))
@@ -76,6 +75,7 @@ macro_rules! impl_op {
             
             impl $name<F64> for f64 {
                 type Output = F64;
+                #[inline(always)]
                 fn $method(self, rhs: F64) -> Self::Output {
                     unsafe {
                         fa(intrinsics::$intrins(self, rhs.0))
@@ -86,6 +86,7 @@ macro_rules! impl_op {
             // Fast<F> + Fast<F>
             impl<F:Float> $name for Fast<F> {
                 type Output = Self;
+                #[inline(always)]
                 fn $method(self, rhs: Self) -> Self::Output {
                     unsafe {
                         fa(intrinsics::$intrins(self.0, rhs.0))
@@ -110,6 +111,7 @@ macro_rules! impl_assignop {
         $(
             // Fast<F> += Fast<F>
             impl<F:Float> $name for Fast<F> {
+                #[inline(always)]
                 fn $method(&mut self, rhs: Self) {
                     unsafe {
                         (*self).0 = intrinsics::$intrins(self.0, rhs.0)
@@ -119,6 +121,7 @@ macro_rules! impl_assignop {
 
             // Fast<F> += F
             impl<F:Float> $name<F> for Fast<F> {
+                #[inline(always)]
                 fn $method(&mut self, rhs: F) {
                     unsafe {
                         (*self).0 = intrinsics::$intrins(self.0, rhs)
@@ -140,18 +143,23 @@ impl_assignop! {
 impl<F:Float> Neg for Fast<F> {
     type Output = Self;
 
+    #[inline(always)]
     fn neg(self) -> Self {
         fa(-self.0)
     }
 }
 
 impl<F:Float> One for Fast<F> {
+    #[inline(always)]
     fn one() -> Self { fa(<_>::one()) }
+    #[inline(always)]
     fn is_one(&self) -> bool { self.0.is_one() }
 }
 
 impl<F:Float> Zero for Fast<F> {
+    #[inline(always)]
     fn zero() -> Self { fa(<_>::zero()) }
+    #[inline(always)]
     fn is_zero(&self) -> bool { self.0.is_zero() }
 }
 
@@ -159,11 +167,12 @@ use std::fmt;
 macro_rules! impl_format {
     ($($name:ident)+) => {
         $(
-        impl<F: fmt::$name> fmt::$name for Fast<F> {
-            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-                self.0.fmt(f)
+            impl<F: fmt::$name> fmt::$name for Fast<F> {
+                #[inline(always)]
+                fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                    self.0.fmt(f)
+                }
             }
-        }
         )+
     }
 }
@@ -173,6 +182,7 @@ impl_format!(Debug Display LowerExp UpperExp);
 impl<F:Float> Eq for Fast<F> {}
 
 impl<F:Float> Ord for Fast<F> {
+    #[inline(always)]
     fn cmp(&self, other: &Self) -> Ordering {
         if self < other {
             Ordering::Less
@@ -186,26 +196,38 @@ impl<F:Float> Ord for Fast<F> {
 
 
 impl<F:Float> Fast<F> {
+    #[inline(always)]
     pub fn abs(self) -> Self { fa(self.0.abs()) }
+    #[inline(always)]
     pub fn ceil(self) -> Self { fa(self.0.ceil()) }
+    #[inline(always)]
     pub fn exp(self) -> Self { fa(self.0.exp()) }
+    #[inline(always)]
     pub fn floor(self) -> Self { fa(self.0.floor()) }
+    #[inline(always)]
     pub fn ln(self) -> Self { fa(self.0.ln()) }
+    #[inline(always)]
     pub fn mul_add(self, a: Self, b: Self) -> Self { fa(self.0.mul_add(a.0, b.0)) }
+    #[inline(always)]
     pub fn powi(self, n: i32) -> Self { fa(self.0.powi(n)) }
+    #[inline(always)]
     pub fn powf(self, n: F) -> Self { fa(self.0.powf(n)) }
+    #[inline(always)]
     pub fn round(self) -> Self { fa(self.0.round()) }
+    #[inline(always)]
     pub fn trunc(self) -> Self { fa(self.0.trunc()) }
     
 }
 
 impl F32 {
     /// Casts a wrapped f32 to a wrapped f64.
+    #[inline(always)]
     pub fn as_64(self) -> F64 {
         fa(self.0 as f64)
     }
 
     /// https://codingforspeed.com/using-faster-exponential-approximation/
+    #[inline(always)]
     pub fn fastexp(self) -> Self {
         let mut y = 1.0 + self*0.00390625;
         y *= y; y *= y; y *= y; y *= y;
@@ -215,6 +237,7 @@ impl F32 {
 
     /// https://stackoverflow.com/a/39822314
     #[allow(overflowing_literals)]
+    #[inline(always)]
     pub fn fastln(self) -> Self { unsafe {
         let selfi = mem::transmute(self):i32;
         let e = (selfi - 0x3f2aaaab) & 0xff800000;
@@ -229,6 +252,7 @@ impl F32 {
         i.mul_add(fa(0.693147182), r)
     } }
 
+    #[inline(always)]
     pub fn sqrt(self) -> Self {
         fa(unsafe { intrinsics::sqrtf32(self.0) })
     }
@@ -236,11 +260,13 @@ impl F32 {
 
 impl F64 {
     /// Casts a wrapped f64 to a wrapped f32.
+    #[inline(always)]
     pub fn as_32(self) -> F32 {
         fa(self.0 as f32)
     }
 
     /// https://codingforspeed.com/using-faster-exponential-approximation/
+    #[inline(always)]
     pub fn fastexp(self) -> Self {
         let mut y = 1.0 + self*0.00390625;
         y *= y; y *= y; y *= y; y *= y;
@@ -248,22 +274,26 @@ impl F64 {
         y
     }
 
+    #[inline(always)]
     pub fn fastln(self) -> Self {
         self.as_32().fastln().as_64()
     }
 
+    #[inline(always)]
     pub fn sqrt(self) -> Self {
         fa(unsafe { intrinsics::sqrtf64(self.0) })
     }
 }
 
 impl Sum<F32> for F32 {
+    #[inline(always)]
     fn sum<I:Iterator<Item=F32>>(iter: I) -> F32 {
         iter.fold(fa(0.0), |a,b| a + b)
     }
 }
 
 impl Sum<F64> for F64 {
+    #[inline(always)]
     fn sum<I:Iterator<Item=F64>>(iter: I) -> F64 {
         iter.fold(fa(0.0), |a,b| a + b)
     }
@@ -271,24 +301,28 @@ impl Sum<F64> for F64 {
 
 
 impl<'a> Sum<&'a F32> for F32 {
+    #[inline(always)]
     fn sum<I:Iterator<Item=&'a F32>>(iter: I) -> F32 {
         iter.fold(fa(0.0), |a,b| a + *b)
     }
 }
 
 impl<'a> Sum<&'a F64> for F64 {
+    #[inline(always)]
     fn sum<I:Iterator<Item=&'a F64>>(iter: I) -> F64 {
         iter.fold(fa(0.0), |a,b| a + *b)
     }
 }
 
 impl<F:Float> PartialEq<F> for Fast<F> {
+    #[inline(always)]
     fn eq(&self, other: &F) -> bool {
         self.0 == *other
     }
 }
 
 impl<F:Float> PartialOrd<F> for Fast<F> {
+    #[inline(always)]
     fn partial_cmp(&self, other: &F) -> Option<Ordering> {
         Some(self.cmp(&fa(*other)))
     }
