@@ -1,7 +1,7 @@
 # fastfloat
 
 [![Latest version](https://img.shields.io/crates/v/fastfloat.svg)](https://crates.io/crates/fastfloat)
-[![Documentation](https://docs.rs/libc/badge.svg)](https://docs.rs/fastfloat)
+[![Documentation](https://docs.rs/fastfloat/badge.svg)](https://docs.rs/fastfloat)
 
 Inspired and based on @bluss's fast-floats:
 https://github.com/bluss/fast-floats
